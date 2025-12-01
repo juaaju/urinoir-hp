@@ -41,17 +41,18 @@ export default function LaporanPage() {
 
       {/* Laporan User */}
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-6">
-        <div className="mb-4">
-          <p><strong>Nama:</strong> {userData.name}</p>
-          <p><strong>NIK:</strong> {userData.nik}</p>
-          <p><strong>Tanggal:</strong> {userData.tanggal}</p>
-          <p>
-            <strong>Hasil:</strong>{" "}
-            <span className={userData.hasil === "Positif" ? "text-red-600" : "text-green-600"}>
-              {userData.hasil}
-            </span>
-          </p>
+        <div className="mb-4 space-y-1">
+            <p className="text-gray-900 font-medium"><strong>Nama:</strong> {userData.name}</p>
+            <p className="text-gray-900 font-medium"><strong>NIK:</strong> {userData.nik}</p>
+            <p className="text-gray-900 font-medium"><strong>Tanggal:</strong> {userData.tanggal}</p>
+            <p>
+                <strong>Hasil:</strong>{" "}
+                <span className={userData.hasil === "Positif" ? "text-red-700 font-semibold" : "text-green-700 font-semibold"}>
+                {userData.hasil}
+                </span>
+            </p>
         </div>
+
 
         <button
           onClick={handleDownload}
