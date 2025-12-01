@@ -7,12 +7,9 @@ import { Camera, AlertCircle } from "lucide-react";
 export default function CameraPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null); // state untuk foto
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  // Debug client-only
-  const [isSecure, setIsSecure] = useState(false);
-  const [url, setUrl] = useState("");
 
   const startCamera = async () => {
     try {
@@ -23,12 +20,10 @@ export default function CameraPage() {
         throw new Error("Browser tidak mendukung akses kamera atau butuh HTTPS");
       }
 
-      // Stop previous stream
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
-      // Pakai kamera depan saja
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
       });
@@ -44,12 +39,23 @@ export default function CameraPage() {
 
   useEffect(() => {
     startCamera();
-
-    setIsSecure(window.isSecureContext);
-    setUrl(`${window.location.protocol}//${window.location.host}`);
-
     return () => streamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/png"); // foto sebagai base64
+    setCapturedPhoto(dataUrl);
+  };
 
   return (
     <div>
@@ -61,8 +67,8 @@ export default function CameraPage() {
               <Image src="/logo.png" alt="Logo" width={32} height={32} priority />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Monitoring Urinoir</h1>
-              <p className="text-sm text-gray-500">Save data urinoir system</p>
+              <h1 className="text-2xl font-bold text-gray-800">Urinoir Camera</h1>
+              <p className="text-sm text-gray-500">Capture Face</p>
             </div>
           </div>
         </div>
@@ -88,8 +94,7 @@ export default function CameraPage() {
             </div>
           )}
 
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            {/* Video kamera diperbesar */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-4">
             <video
               ref={videoRef}
               autoPlay
@@ -99,14 +104,25 @@ export default function CameraPage() {
             />
           </div>
 
-          {/* Debug */}
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
-            <strong>🔍 Debug:</strong>
-            <div className="mt-2 space-y-1 font-mono text-xs">
-              <div>HTTPS: {isSecure ? "✅" : "❌"}</div>
-              <div>URL: {url}</div>
+          {/* Tombol Capture */}
+          <button
+            onClick={capturePhoto}
+            className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium transition"
+          >
+            Ambil Foto
+          </button>
+
+          {/* Preview Foto */}
+          {capturedPhoto && (
+            <div className="mt-4 text-center">
+              <h2 className="font-medium mb-2">Preview Foto</h2>
+              <img
+                src={capturedPhoto}
+                alt="Captured"
+                className="mx-auto rounded-lg border border-gray-300 max-w-full"
+              />
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
