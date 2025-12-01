@@ -122,15 +122,6 @@ export default function CameraPage() {
               </button>
             </div>
           </div>
-
-          {/* Debug */}
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
-            <strong>🔍 Debug:</strong>
-            <div className="mt-2 space-y-1 font-mono text-xs">
-              <div>HTTPS: {isSecure ? "✅" : "❌"}</div>
-              <div>URL: {url}</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
