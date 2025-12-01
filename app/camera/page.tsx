@@ -1,16 +1,20 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Camera, RefreshCw, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { Camera, RefreshCw, AlertCircle } from "lucide-react";
 
 export default function CameraPage() {
   const [error, setError] = useState<string | null>(null);
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const startCamera = async (mode: 'user' | 'environment') => {
+  // State untuk debug window (client-only)
+  const [isSecure, setIsSecure] = useState(false);
+  const [url, setUrl] = useState("");
+
+  const startCamera = async (mode: "user" | "environment") => {
     try {
       setLoading(true);
       setError(null);
@@ -19,14 +23,15 @@ export default function CameraPage() {
         throw new Error("Browser tidak mendukung akses kamera atau butuh HTTPS");
       }
 
+      // Stop previous stream
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: mode } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode },
       });
-      
+
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setFacingMode(mode);
@@ -38,12 +43,17 @@ export default function CameraPage() {
   };
 
   useEffect(() => {
-    startCamera('environment');
-    return () => streamRef.current?.getTracks().forEach(track => track.stop());
+    startCamera("environment");
+
+    // Update debug info di client
+    setIsSecure(window.isSecureContext);
+    setUrl(`${window.location.protocol}//${window.location.host}`);
+
+    return () => streamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
 
   const switchCamera = () => {
-    startCamera(facingMode === 'user' ? 'environment' : 'user');
+    startCamera(facingMode === "user" ? "environment" : "user");
   };
 
   return (
@@ -72,19 +82,19 @@ export default function CameraPage() {
             muted
             className="w-full aspect-video bg-black"
           />
-          
+
           <div className="p-4 space-y-3">
             <div className="text-center text-sm text-gray-600">
-              Kamera: <strong>{facingMode === 'user' ? '🤳 Depan' : '📷 Belakang'}</strong>
+              Kamera: <strong>{facingMode === "user" ? "🤳 Depan" : "📷 Belakang"}</strong>
             </div>
-            
+
             <button
               onClick={switchCamera}
               disabled={loading}
               className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition"
             >
-              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              {loading ? 'Mengganti...' : `Ganti ke ${facingMode === 'user' ? 'Belakang' : 'Depan'}`}
+              <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+              {loading ? "Mengganti..." : `Ganti ke ${facingMode === "user" ? "Belakang" : "Depan"}`}
             </button>
           </div>
         </div>
@@ -92,8 +102,8 @@ export default function CameraPage() {
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
           <strong>🔍 Debug:</strong>
           <div className="mt-2 space-y-1 font-mono text-xs">
-            <div>HTTPS: {window.isSecureContext ? '✅' : '❌'}</div>
-            <div>URL: {window.location.protocol}//{window.location.host}</div>
+            <div>HTTPS: {isSecure ? "✅" : "❌"}</div>
+            <div>URL: {url}</div>
           </div>
         </div>
       </div>
