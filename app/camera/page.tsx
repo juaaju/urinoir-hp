@@ -1,194 +1,100 @@
-"use client";
-
 import React, { useState, useEffect, useRef } from 'react';
+import { Camera, RefreshCw, AlertCircle } from 'lucide-react';
 
-const CameraPage = () => {
-  const [hasPermission, setHasPermission] = useState(false);
+export default function CameraPage() {
   const [error, setError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+  const [loading, setLoading] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  useEffect(() => {
-    const getCamera = async () => {
-      try {
-        // Cek apakah browser mendukung getUserMedia
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error(
-            "Browser Anda tidak mendukung akses kamera. " +
-            "Pastikan Anda mengakses melalui HTTPS atau gunakan browser modern."
-          );
-        }
-
-        // Cek apakah sedang di HTTPS atau localhost
-        const isSecureContext = window.isSecureContext;
-        if (!isSecureContext) {
-          throw new Error(
-            "Akses kamera memerlukan koneksi aman (HTTPS). " +
-            "Saat ini Anda mengakses melalui HTTP."
-          );
-        }
-
-        // Request kamera dengan constraint yang lebih kompatibel
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'user' // atau 'environment' untuk kamera belakang
-          } 
-        });
-        
-        streamRef.current = stream;
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-
-        setHasPermission(true);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Terjadi kesalahan yang tidak diketahui");
-        }
-      }
-    };
-
-    getCamera();
-
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, []);
-
-  const switchCamera = async () => {
+  const startCamera = async (mode: 'user' | 'environment') => {
     try {
-      // Stop stream saat ini
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
+      setLoading(true);
+      setError(null);
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Browser tidak mendukung akses kamera atau butuh HTTPS");
       }
 
-      // Ganti kamera
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: { exact: 'environment' } // Kamera belakang
-        } 
+        video: { facingMode: mode } 
       });
       
       streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      setFacingMode(mode);
     } catch (err) {
-      // Fallback ke kamera depan jika belakang tidak tersedia
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'user'
-          } 
-        });
-        
-        streamRef.current = stream;
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (fallbackErr) {
-        if (fallbackErr instanceof Error) {
-          setError("Tidak bisa ganti kamera: " + fallbackErr.message);
-        }
-      }
+      setError(err instanceof Error ? err.message : "Error tidak diketahui");
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div style={{ 
-      textAlign: "center", 
-      padding: "20px",
-      fontFamily: "system-ui, -apple-system, sans-serif"
-    }}>
-      <h1 style={{ marginBottom: "16px" }}>📱 Akses Kamera HP</h1>
-      
-      {error && (
-        <div style={{ 
-          color: "white",
-          backgroundColor: "#ef4444",
-          padding: "12px",
-          borderRadius: "8px",
-          marginBottom: "16px",
-          maxWidth: "600px",
-          margin: "0 auto 16px"
-        }}>
-          <strong>Error:</strong> {error}
-        </div>
-      )}
+  useEffect(() => {
+    startCamera('environment');
+    return () => streamRef.current?.getTracks().forEach(track => track.stop());
+  }, []);
 
-      {hasPermission ? (
-        <>
+  const switchCamera = () => {
+    startCamera(facingMode === 'user' ? 'environment' : 'user');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Camera className="w-8 h-8" />
+          <h1 className="text-2xl font-bold">Akses Kamera</h1>
+        </div>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <strong>Error:</strong> {error}
+              <p className="mt-2">💡 Pastikan akses via HTTPS & matikan overlay apps</p>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            style={{
-              width: "100%",
-              maxWidth: "600px",
-              borderRadius: "12px",
-              marginTop: "16px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-            }}
+            className="w-full aspect-video bg-black"
           />
-          <button
-            onClick={switchCamera}
-            style={{
-              marginTop: "16px",
-              padding: "12px 24px",
-              fontSize: "16px",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: "500"
-            }}
-          >
-            🔄 Ganti Kamera
-          </button>
-        </>
-      ) : (
-        <div style={{
-          padding: "40px",
-          backgroundColor: "#f3f4f6",
-          borderRadius: "12px",
-          maxWidth: "600px",
-          margin: "0 auto"
-        }}>
-          <p style={{ fontSize: "18px", color: "#6b7280" }}>
-            ⏳ Menunggu izin kamera...
-          </p>
+          
+          <div className="p-4 space-y-3">
+            <div className="text-center text-sm text-gray-600">
+              Kamera: <strong>{facingMode === 'user' ? '🤳 Depan' : '📷 Belakang'}</strong>
+            </div>
+            
+            <button
+              onClick={switchCamera}
+              disabled={loading}
+              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition"
+            >
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? 'Mengganti...' : `Ganti ke ${facingMode === 'user' ? 'Belakang' : 'Depan'}`}
+            </button>
+          </div>
         </div>
-      )}
 
-      <div style={{
-        marginTop: "32px",
-        padding: "16px",
-        backgroundColor: "#fef3c7",
-        borderRadius: "8px",
-        maxWidth: "600px",
-        margin: "32px auto 0",
-        fontSize: "14px",
-        color: "#92400e"
-      }}>
-        <strong>💡 Tips:</strong>
-        <ul style={{ textAlign: "left", marginTop: "8px" }}>
-          <li>Pastikan mengakses melalui <strong>HTTPS</strong></li>
-          <li>Izinkan akses kamera saat browser meminta</li>
-          <li>Gunakan browser modern (Chrome, Safari, Firefox)</li>
-          <li>Periksa pengaturan privasi di HP Anda</li>
-        </ul>
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
+          <strong>🔍 Debug:</strong>
+          <div className="mt-2 space-y-1 font-mono text-xs">
+            <div>HTTPS: {window.isSecureContext ? '✅' : '❌'}</div>
+            <div>URL: {window.location.protocol}//{window.location.host}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default CameraPage;
+}
