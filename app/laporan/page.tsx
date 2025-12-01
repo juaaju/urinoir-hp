@@ -1,32 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Download } from "lucide-react";
 
 export default function LaporanPage() {
-  const [userData, setUserData] = useState<{ name: string; nik: string } | null>(null);
-  const [laporan, setLaporan] = useState<{ tanggal: string; hasil: string } | null>(null);
-
-  useEffect(() => {
-    // Ambil data user dari localStorage (yang sudah login)
-    const name = localStorage.getItem("userName");
-    const nik = localStorage.getItem("userNik");
-
-    if (name && nik) {
-      setUserData({ name, nik });
-
-      // Dummy laporan untuk user ini
-      setLaporan({
-        tanggal: "2025-12-01",
-        hasil: "Negatif", // bisa diganti Positif untuk testing
-      });
-    }
-  }, []);
+  // Data dummy user
+  const userData = {
+    name: "Andi Rahmadiansah",
+    nik: "1234567890123456",
+    tanggal: "2025-12-01",
+    hasil: "Negatif",
+  };
 
   const handleDownload = () => {
-    if (!userData || !laporan) return;
-
-    const csvContent = `Nama,NIK,Tanggal,Hasil\n${userData.name},${userData.nik},${laporan.tanggal},${laporan.hasil}`;
+    const csvContent = `Nama,NIK,Tanggal,Hasil\n${userData.name},${userData.nik},${userData.tanggal},${userData.hasil}`;
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -35,14 +22,6 @@ export default function LaporanPage() {
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  if (!userData || !laporan) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Tidak ada data user, silakan login terlebih dahulu.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -65,11 +44,11 @@ export default function LaporanPage() {
         <div className="mb-4">
           <p><strong>Nama:</strong> {userData.name}</p>
           <p><strong>NIK:</strong> {userData.nik}</p>
-          <p><strong>Tanggal:</strong> {laporan.tanggal}</p>
+          <p><strong>Tanggal:</strong> {userData.tanggal}</p>
           <p>
             <strong>Hasil:</strong>{" "}
-            <span className={laporan.hasil === "Positif" ? "text-red-600" : "text-green-600"}>
-              {laporan.hasil}
+            <span className={userData.hasil === "Positif" ? "text-red-600" : "text-green-600"}>
+              {userData.hasil}
             </span>
           </p>
         </div>
