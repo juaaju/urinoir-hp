@@ -10,6 +10,9 @@ export default function CameraPage() {
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState<boolean | null>(null);
+  const [name, setName] = useState("");
+  const [nik, setNik] = useState("");
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -61,7 +64,15 @@ export default function CameraPage() {
   };
 
   const sendPhoto = async () => {
-    if (!capturedPhoto) return;
+    if (!capturedPhoto) {
+      setError("Silakan ambil foto terlebih dahulu");
+      return;
+    }
+    if (!name || !nik) {
+      setError("Nama dan NIK wajib diisi");
+      return;
+    }
+
     setSending(true);
     setError(null);
     setSendSuccess(null);
@@ -70,7 +81,7 @@ export default function CameraPage() {
       const response = await fetch("https://kirimgambar.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: capturedPhoto }),
+        body: JSON.stringify({ name, nik, image: capturedPhoto }),
       });
 
       if (!response.ok) throw new Error(`Gagal kirim: ${response.statusText}`);
@@ -147,18 +158,44 @@ export default function CameraPage() {
                 className="mx-auto rounded-lg border border-gray-300 max-w-full"
               />
 
+              {/* Form Nama & NIK */}
+              <div className="mt-4 space-y-3 text-left">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nama</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                    placeholder="Masukkan nama"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">NIK</label>
+                  <input
+                    type="text"
+                    value={nik}
+                    onChange={(e) => setNik(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                    placeholder="Masukkan NIK"
+                    required
+                  />
+                </div>
+              </div>
+
               {/* Tombol Kirim */}
               <button
                 onClick={sendPhoto}
                 disabled={sending}
                 className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition"
               >
-                {sending ? "Mengirim..." : "Kirim Foto"}
+                {sending ? "Mengirim..." : "Kirim Data"}
               </button>
 
               {/* Status Kirim */}
-              {sendSuccess === true && <p className="mt-2 text-green-600">✅ Foto berhasil dikirim!</p>}
-              {sendSuccess === false && <p className="mt-2 text-red-600">❌ Gagal kirim foto</p>}
+              {sendSuccess === true && <p className="mt-2 text-green-600">✅ Data berhasil dikirim!</p>}
+              {sendSuccess === false && <p className="mt-2 text-red-600">❌ Gagal kirim data</p>}
             </div>
           )}
         </div>
