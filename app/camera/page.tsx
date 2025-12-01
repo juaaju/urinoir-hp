@@ -116,7 +116,7 @@ export default function CameraPage() {
         <div className="w-full max-w-3xl">
           <div className="flex items-center justify-center gap-2 mb-6">
             <Camera className="w-8 h-8" />
-            <h1 className="text-xl sm:text-2xl font-bold text-center">
+            <h1 className="text-xl sm:text-2xl text-gray-900 font-bold text-center">
               Foto Wajah Untuk Mendapatkan Hasil Urin
             </h1>
           </div>
