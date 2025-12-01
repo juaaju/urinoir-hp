@@ -7,7 +7,9 @@ import { Camera, AlertCircle } from "lucide-react";
 export default function CameraPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null); // state untuk foto
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -53,8 +55,32 @@ export default function CameraPage() {
     if (!ctx) return;
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL("image/png"); // foto sebagai base64
+    const dataUrl = canvas.toDataURL("image/png");
     setCapturedPhoto(dataUrl);
+    setSendSuccess(null);
+  };
+
+  const sendPhoto = async () => {
+    if (!capturedPhoto) return;
+    setSending(true);
+    setError(null);
+    setSendSuccess(null);
+
+    try {
+      const response = await fetch("https://kirimgambar.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: capturedPhoto }),
+      });
+
+      if (!response.ok) throw new Error(`Gagal kirim: ${response.statusText}`);
+      setSendSuccess(true);
+    } catch (err: any) {
+      setError(err.message || "Error kirim foto");
+      setSendSuccess(false);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -67,8 +93,8 @@ export default function CameraPage() {
               <Image src="/logo.png" alt="Logo" width={32} height={32} priority />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Urinoir Camera</h1>
-              <p className="text-sm text-gray-500">Capture Face</p>
+              <h1 className="text-2xl font-bold text-gray-800">Monitoring Urinoir</h1>
+              <p className="text-sm text-gray-500">Save data urinoir system</p>
             </div>
           </div>
         </div>
@@ -89,7 +115,6 @@ export default function CameraPage() {
               <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
                 <strong>Error:</strong> {error}
-                <p className="mt-2">💡 Pastikan akses via HTTPS & matikan overlay apps</p>
               </div>
             </div>
           )}
@@ -107,7 +132,7 @@ export default function CameraPage() {
           {/* Tombol Capture */}
           <button
             onClick={capturePhoto}
-            className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium transition"
+            className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium transition mb-4"
           >
             Ambil Foto
           </button>
@@ -121,6 +146,19 @@ export default function CameraPage() {
                 alt="Captured"
                 className="mx-auto rounded-lg border border-gray-300 max-w-full"
               />
+
+              {/* Tombol Kirim */}
+              <button
+                onClick={sendPhoto}
+                disabled={sending}
+                className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition"
+              >
+                {sending ? "Mengirim..." : "Kirim Foto"}
+              </button>
+
+              {/* Status Kirim */}
+              {sendSuccess === true && <p className="mt-2 text-green-600">✅ Foto berhasil dikirim!</p>}
+              {sendSuccess === false && <p className="mt-2 text-red-600">❌ Gagal kirim foto</p>}
             </div>
           )}
         </div>
