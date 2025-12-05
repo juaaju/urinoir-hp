@@ -78,13 +78,24 @@ export default function CameraPage() {
     setSendSuccess(null);
 
     try {
-      const response = await fetch("https://kirimgambar.com", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, nik, image: capturedPhoto }),
-      });
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("nik", nik);
+      formData.append("image", dataURItoBlob(capturedPhoto), "photo.png");
 
-      if (!response.ok) throw new Error(`Gagal kirim: ${response.statusText}`);
+      const response = await fetch(
+        "https://unimposingly-unflaked-rayden.ngrok-free.dev/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const result = await response.json();
+      console.log("SERVER:", result);
+
+      if (!response.ok) throw new Error(result.message || "Gagal kirim data");
+
       setSendSuccess(true);
     } catch (err: any) {
       setError(err.message || "Error kirim foto");
@@ -194,12 +205,29 @@ export default function CameraPage() {
               </button>
 
               {/* Status Kirim */}
-              {sendSuccess === true && <p className="mt-2 text-green-600">✅ Data berhasil dikirim!</p>}
-              {sendSuccess === false && <p className="mt-2 text-red-600">❌ Gagal kirim data</p>}
+              {sendSuccess === true && (
+                <p className="mt-2 text-green-600">✅ Data berhasil dikirim!</p>
+              )}
+              {sendSuccess === false && (
+                <p className="mt-2 text-red-600">❌ Gagal kirim data</p>
+              )}
             </div>
           )}
         </div>
       </div>
     </div>
   );
+}
+
+/* ================================
+   Convert Base64 → Blob (WAJIB)
+================================ */
+function dataURItoBlob(dataURI: string) {
+  const byteString = atob(dataURI.split(",")[1]);
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: "image/png" });
 }
