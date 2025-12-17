@@ -16,7 +16,7 @@ export default function ManualInputPage() {
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5098/update-gas-manual", {
+      const res = await fetch("https://unimposingly-unflaked-rayden.ngrok-free.dev/update-gas-manual", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

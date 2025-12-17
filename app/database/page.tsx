@@ -11,7 +11,7 @@ export default function ExcelData() {
   // Fungsi untuk mengambil data Excel dari API Flask
   const fetchExcelData = async () => {
     try {
-      const response = await fetch('http://localhost:5011/api/excel-data');
+      const response = await fetch('https://unimposingly-unflaked-rayden.ngrok-free.dev/api/excel-data');
       
       if (!response.ok) {
         throw new Error('Gagal mengambil data Excel');

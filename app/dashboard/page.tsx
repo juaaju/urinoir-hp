@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const fetchData = async () => {
     try {
       // Fetch sensor detect
-      const detectRes = await fetch("http://localhost:5099/detect", {
+      const detectRes = await fetch("https://unimposingly-unflaked-rayden.ngrok-free.dev/detect", {
         cache: "no-store",
       });
       const detectJson: DetectResponse = await detectRes.json();
@@ -37,7 +37,7 @@ export default function DashboardPage() {
       setDetectStatus(detectJson.status);
 
       // Fetch process status
-      const statusRes = await fetch("http://localhost:5099/status", {
+      const statusRes = await fetch("https://unimposingly-unflaked-rayden.ngrok-free.dev/status", {
         cache: "no-store",
       });
       const statusJson: StatusResponse = await statusRes.json();
