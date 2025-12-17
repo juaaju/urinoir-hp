@@ -31,6 +31,9 @@ export default function DashboardPage() {
       // Fetch sensor detect
       const detectRes = await fetch("https://unimposingly-unflaked-rayden.ngrok-free.dev/detect", {
         cache: "no-store",
+          headers: {
+            "ngrok-skip-browser-warning": "true"
+          }
       });
       const detectJson: DetectResponse = await detectRes.json();
       setGasData(detectJson.data);
@@ -39,6 +42,9 @@ export default function DashboardPage() {
       // Fetch process status
       const statusRes = await fetch("https://unimposingly-unflaked-rayden.ngrok-free.dev/status", {
         cache: "no-store",
+          headers: {
+            "ngrok-skip-browser-warning": "true"
+          }
       });
       const statusJson: StatusResponse = await statusRes.json();
       setProcessStatus(statusJson.status);

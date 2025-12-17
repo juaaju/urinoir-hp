@@ -11,7 +11,11 @@ export default function ExcelData() {
   // Fungsi untuk mengambil data Excel dari API Flask
   const fetchExcelData = async () => {
     try {
-      const response = await fetch('https://unimposingly-unflaked-rayden.ngrok-free.dev/api/excel-data');
+      const response = await fetch('https://unimposingly-unflaked-rayden.ngrok-free.dev/api/excel-data', {
+        headers: {
+          "ngrok-skip-browser-warning": "true"
+        }
+      });
       
       if (!response.ok) {
         throw new Error('Gagal mengambil data Excel');
@@ -22,7 +26,7 @@ export default function ExcelData() {
     } catch (error: any) {
       setError("Gagal memuat data Excel: " + error.message);
     }
-  };
+};
 
   // Panggil fetchExcelData saat halaman pertama kali dimuat
   useEffect(() => {
