@@ -3,8 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Camera, AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation"; // untuk redirect
 
 export default function CameraPage() {
+  const router = useRouter(); // ✅ di sini
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -96,7 +98,14 @@ export default function CameraPage() {
 
       if (!response.ok) throw new Error(result.message || "Gagal kirim data");
 
+      // tampilkan sukses
       setSendSuccess(true);
+
+      // redirect ke /laporan setelah 2 detik
+      setTimeout(() => {
+        router.push("/laporan");
+      }, 2000);
+
     } catch (err: any) {
       setError(err.message || "Error kirim foto");
       setSendSuccess(false);
@@ -104,6 +113,7 @@ export default function CameraPage() {
       setSending(false);
     }
   };
+
 
   return (
     <div>
