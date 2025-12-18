@@ -18,7 +18,7 @@ export default function LoginPage() {
     // cek login sederhana
     if (username === "siswa" && password === "1234") {
       localStorage.setItem("loggedIn", "true");
-      router.push("/camera");
+      router.push("/dashboard");
     } else {
       setError("Username atau password salah!");
     }

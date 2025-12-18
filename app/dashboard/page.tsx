@@ -66,11 +66,11 @@ export default function DashboardPage() {
     if (!value) return "normal";
     switch (name) {
       case "Aseton":
-        return value >= 1 ? "danger" : "normal";
+        return value >= 10 ? "danger" : "normal";
       case "Alkohol":
-        return value >= 100 ? "danger" : "normal";
+        return value >= 50 ? "danger" : "normal";
       case "Amoniak":
-        return value >= 10 ? "warning" : "normal";
+        return value >= 50 ? "warning" : "normal";
       default:
         return "normal";
     }
